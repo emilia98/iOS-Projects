@@ -69,14 +69,20 @@ class ConversionViewController: UIViewController, UITextFieldDelegate {
     func textField(_ textField: UITextField,
                    shouldChangeCharactersIn range: NSRange,
                    replacementString string: String) -> Bool {
-        let existingTextHasDecimalSeparator = textField.text?.range(of: ".")
-        let replacementTextHasDecimalSeparator = string.range(of: ".")
+        let separator = "."
+        let existingTextHasDecimalSeparator = textField.text?.range(of: separator)
+        let replacementTextHasDecimalSeparator = string.range(of: separator)
+        var allowedCharacters = CharacterSet.decimalDigits
+        allowedCharacters.insert(".")
         
-        if existingTextHasDecimalSeparator != nil,
-           replacementTextHasDecimalSeparator != nil {
-            return false
-        }
-        return true
+        // Returns true, if:
+      //  - string is backspace/return button
+        // - existingText and replacementText does not contain the separator
+        // both at the same time
+        // - string does not contain characters, different from digits and separator
+        return string.isEmpty || !(existingTextHasDecimalSeparator != nil &&
+        replacementTextHasDecimalSeparator != nil)
+            && string.rangeOfCharacter(from: allowedCharacters) != nil
     }
 }
 
