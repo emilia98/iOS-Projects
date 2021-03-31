@@ -73,16 +73,21 @@ class ConversionViewController: UIViewController, UITextFieldDelegate {
         let existingTextHasDecimalSeparator = textField.text?.range(of: separator)
         let replacementTextHasDecimalSeparator = string.range(of: separator)
         var allowedCharacters = CharacterSet.decimalDigits
-        allowedCharacters.insert(".")
+        allowedCharacters.insert(Unicode.Scalar(separator)!)
         
-        // Returns true, if:
-      //  - string is backspace/return button
-        // - existingText and replacementText does not contain the separator
-        // both at the same time
-        // - string does not contain characters, different from digits and separator
-        return string.isEmpty || !(existingTextHasDecimalSeparator != nil &&
+        // String is backspace/return button
+        if string.isEmpty {
+            return true
+        }
+        
+        // String contains characters, different from digits and separator
+        if string.rangeOfCharacter(from: allowedCharacters) == nil {
+            return false
+        }
+        
+        // Separator, added after present separator
+        return !(existingTextHasDecimalSeparator != nil &&
         replacementTextHasDecimalSeparator != nil)
-            && string.rangeOfCharacter(from: allowedCharacters) != nil
     }
 }
 
