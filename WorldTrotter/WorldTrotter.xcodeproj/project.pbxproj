@@ -15,6 +15,7 @@
 		84698431260A19C600FE9EB4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8469842F260A19C600FE9EB4 /* LaunchScreen.storyboard */; };
 		8469843A260D0D5A00FE9EB4 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698439260D0D5A00FE9EB4 /* MapViewController.swift */; };
 		848EEC50260DD7EB00482B30 /* QuizViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848EEC4F260DD7EB00482B30 /* QuizViewController.swift */; };
+		84A87A4E2614D3B80092BF87 /* ConversionSecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A87A4D2614D3B80092BF87 /* ConversionSecondViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		84698432260A19C600FE9EB4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		84698439260D0D5A00FE9EB4 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		848EEC4F260DD7EB00482B30 /* QuizViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuizViewController.swift; sourceTree = "<group>"; };
+		84A87A4D2614D3B80092BF87 /* ConversionSecondViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionSecondViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 				8469842D260A19C600FE9EB4 /* Assets.xcassets */,
 				8469842F260A19C600FE9EB4 /* LaunchScreen.storyboard */,
 				84698432260A19C600FE9EB4 /* Info.plist */,
+				84A87A4D2614D3B80092BF87 /* ConversionSecondViewController.swift */,
 			);
 			path = WorldTrotter;
 			sourceTree = "<group>";
@@ -147,6 +150,7 @@
 				84698429260A19C500FE9EB4 /* ConversionViewController.swift in Sources */,
 				84698425260A19C500FE9EB4 /* AppDelegate.swift in Sources */,
 				84698427260A19C500FE9EB4 /* SceneDelegate.swift in Sources */,
+				84A87A4E2614D3B80092BF87 /* ConversionSecondViewController.swift in Sources */,
 				8469843A260D0D5A00FE9EB4 /* MapViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
