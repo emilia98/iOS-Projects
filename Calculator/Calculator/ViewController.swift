@@ -21,6 +21,7 @@ class ViewController: UIViewController {
     private var result = 0.0
     private var operation: Character! = nil
     private var prevCharacter: Character! = nil
+    private var lastNum: Double! = nil
     
     // Colors Defined
     private let darkGrey = UIColor(red: 51 / 255.0, green: 51 / 255.0, blue: 51 / 255.0, alpha: 1.00)
@@ -210,7 +211,7 @@ class ViewController: UIViewController {
         case .operation:
             button.addTarget(self, action: #selector(operatorButtonClicked(_:)), for: .touchDown)
         case .clear:
-            break
+            button.addTarget(self, action: #selector(clearButtonClicked(_:)), for: .touchDown)
         case .separator:
             break
         }
@@ -223,18 +224,28 @@ class ViewController: UIViewController {
     func numericButtonClicked(_ sender: UIButton) {
         let text = sender.titleLabel?.text
         let prevResult = resultLabel.text
-        
-        if prevResult == "0" || prevCharacter == nil || prevCharacter < "0" || prevCharacter > "9" {
+
+        if prevResult == "0" || isOperation {
             resultLabel.text = text
+            lastNum = Double(text!)
         } else {
             resultLabel.text = prevResult! + text!
+            lastNum = (lastNum ?? 0) + (Double(text ?? "") ?? 0)
         }
         
-        prevCharacter = text?.first
+        prevCharacter = nil
     }
     
     func separatorButtonClicked(_ sender: UIButton) {
         
+    }
+    
+    @objc
+    func clearButtonClicked(_ sender: UIButton) {
+        result = 0.0
+        resultLabel.text = "0"
+        prevCharacter = nil
+        operation = nil
     }
     
     @objc
@@ -243,43 +254,73 @@ class ViewController: UIViewController {
             return
         }
         
+        let labelNum = Double(resultLabel.text ?? "0") ?? 0
+
         if sign == "=" {
-            let labelNum = Double(resultLabel.text ?? "0") ?? 0
+            
             switch operation {
             case "+":
-                result = result + labelNum
+                result = result + lastNum
             case "−":
-                result = result - labelNum
+                result = result - lastNum
             case "×":
-                result = result * labelNum
+                result = result * lastNum
             case "÷":
-                result = result / labelNum
+                result = result / lastNum
             case "%":
                 result = result / 100
             default:
                 break
             }
-            
-            if result - floor(result) == 0 {
-                resultLabel.text = String(format: "%.0f", result)
-            } else {
-                resultLabel.text = "\(result)"
-            }
-            
-        } else if sign == "⁺∕₋" {
-            let labelNum = Double(resultLabel.text ?? "0") ?? 0
-            result = labelNum * -1
-            resultLabel.text = "\(result)"
+            formatResult()
             return
         }
-        /* else if sign == "%" {
-            let labelNum = Double(resultLabel.text ?? "0")!
-            result = result
-        } */
         
-        result = Double(resultLabel.text ?? "0")!
+        if prevCharacter != nil {
+            operation = sign.first!
+            prevCharacter = sign.first!
+            return
+        }
+        
+        if sign == "⁺∕₋" {
+            if labelNum != 0 {
+                result = labelNum * -1
+                formatResult()
+            }
+            return
+        }
+        // 
+        
+        switch sign {
+        case "+":
+            result = result + labelNum
+        case "−":
+            result = result - labelNum
+        case "×":
+            result = result * labelNum
+        case "÷":
+            result = result / labelNum
+        case "%":
+            result = result / 100
+        default:
+            break
+        }
+        
+        formatResult()
         operation = sign.first!
         prevCharacter = operation
+    }
+    
+    private func formatResult() {
+        if result - floor(result) == 0 {
+            resultLabel.text = String(format: "%.0f", result)
+        } else {
+            resultLabel.text = "\(result)"
+        }
+    }
+    
+    var isOperation: Bool {
+        prevCharacter != nil
     }
 }
 
