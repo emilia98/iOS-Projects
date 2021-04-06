@@ -17,21 +17,17 @@ private enum ButtonShape {
 
 class ViewController: UIViewController {
     @IBOutlet var resultLabel: UILabel!
-    private var buttons: [(button: UIButton, type: ButtonType, shape: ButtonShape)] = [(UIButton, ButtonType, ButtonShape)]()
+    private var buttons: [(button: UIButton, type: ButtonType, shape: ButtonShape)] = []
     private var result = 0.0
     private var operation: Character! = nil
     private var prevCharacter: Character! = nil
     private var lastNum: Double! = nil
+    private var separator: Character! = nil
     
     // Colors Defined
     private let darkGrey = UIColor(red: 51 / 255.0, green: 51 / 255.0, blue: 51 / 255.0, alpha: 1.00)
     private let lightGrey = UIColor(red: 165 / 255.0, green: 165 / 255.0, blue: 165 / 255.0, alpha: 1.00)
     private let customOrange = UIColor(red: 241 / 255.0, green: 163 / 255.0, blue: 59 / 255.0, alpha: 1.00)
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view.
-    }
     
     override func loadView() {
         view = UIView()
@@ -42,11 +38,10 @@ class ViewController: UIViewController {
         resultLabel.textColor = UIColor.white
         resultLabel.font = UIFont.systemFont(ofSize: 76, weight: .light)
         resultLabel.textAlignment = .right
-        
-        view.addSubview(resultLabel)
-        // resultLabel.backgroundColor = UIColor.yellow
         resultLabel.translatesAutoresizingMaskIntoConstraints = false
-         resultLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -50).isActive = true
+        view.addSubview(resultLabel)
+        
+        resultLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -50).isActive = true
         // resultLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50).isActive = true
         resultLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16).isActive = true
         // resultLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16).isActive = true
@@ -169,7 +164,7 @@ class ViewController: UIViewController {
             }
         }
         
-        resultLabel.bottomAnchor.constraint(equalTo: buttonClear.topAnchor, constant: -16).isActive = true
+        resultLabel.bottomAnchor.constraint(equalTo: subview.topAnchor, constant: -16).isActive = true
 
     }
     
@@ -187,12 +182,12 @@ class ViewController: UIViewController {
         let button = UIButton()
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: fontSize)
-        button.contentHorizontalAlignment = .left
         button.layer.borderWidth = 1
         button.layer.borderColor = color.cgColor
         button.backgroundColor = color
         button.contentHorizontalAlignment = .center
         button.contentVerticalAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(button)
         
         if color == lightGrey {
@@ -203,8 +198,6 @@ class ViewController: UIViewController {
         }
         
         
-        button.translatesAutoresizingMaskIntoConstraints = false
-        
         switch type {
         case .numeric:
             button.addTarget(self, action: #selector(numericButtonClicked(_:)), for: .touchDown)
@@ -213,7 +206,7 @@ class ViewController: UIViewController {
         case .clear:
             button.addTarget(self, action: #selector(clearButtonClicked(_:)), for: .touchDown)
         case .separator:
-            break
+            button.addTarget(self, action: #selector(separatorButtonClicked(_:)), for: .touchDown)
         }
 
         buttons.append((button: button, type: type, shape: shape))
@@ -229,15 +222,25 @@ class ViewController: UIViewController {
             resultLabel.text = text
             lastNum = Double(text!)
         } else {
+            // print("here", prevResult, text, lastNum, prevResult! + text!)
             resultLabel.text = prevResult! + text!
-            lastNum = (lastNum ?? 0) + (Double(text ?? "") ?? 0)
+           // lastNum = (lastNum ?? 0) + (Double(text ?? "") ?? 0)
+            lastNum = Double(resultLabel.text!)
         }
+        
+        //print(lastNum, "lastNum")
         
         prevCharacter = nil
     }
     
+    @objc
     func separatorButtonClicked(_ sender: UIButton) {
+        if separator != nil {
+            return
+        }
         
+        resultLabel.text?.append(".")
+        separator = ","
     }
     
     @objc
@@ -246,6 +249,8 @@ class ViewController: UIViewController {
         resultLabel.text = "0"
         prevCharacter = nil
         operation = nil
+        separator = nil
+        lastNum = nil
     }
     
     @objc
@@ -254,10 +259,11 @@ class ViewController: UIViewController {
             return
         }
         
+        //print(sign, resultLabel.text, lastNum, result)
         let labelNum = Double(resultLabel.text ?? "0") ?? 0
 
         if sign == "=" {
-            
+           // print(lastNum, result, "=")
             switch operation {
             case "+":
                 result = result + lastNum
@@ -272,15 +278,19 @@ class ViewController: UIViewController {
             default:
                 break
             }
+            
+            lastNum = 0.0
             formatResult()
             return
         }
         
         if prevCharacter != nil {
+            // print("changing signs", prevCharacter, operation, sign.first!)
             operation = sign.first!
             prevCharacter = sign.first!
             return
         }
+        
         
         if sign == "⁺∕₋" {
             if labelNum != 0 {
@@ -289,17 +299,16 @@ class ViewController: UIViewController {
             }
             return
         }
-        // 
         
         switch sign {
         case "+":
-            result = result + labelNum
+            result = result + lastNum
         case "−":
-            result = result - labelNum
+            result = result - lastNum
         case "×":
-            result = result * labelNum
+            result = result * lastNum
         case "÷":
-            result = result / labelNum
+            result = result / lastNum
         case "%":
             result = result / 100
         default:
@@ -317,6 +326,8 @@ class ViewController: UIViewController {
         } else {
             resultLabel.text = "\(result)"
         }
+        
+        separator = nil
     }
     
     var isOperation: Bool {
