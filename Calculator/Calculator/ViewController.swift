@@ -7,14 +7,24 @@
 
 import UIKit
 
+enum ButtonType {
+    case numeric, operation, separator, clear
+}
+
+enum ButtonShape {
+    case roundedEdges, perfectCircle
+}
+
 class ViewController: UIViewController {
     @IBOutlet var resultLabel: UILabel!
+    @IBOutlet var subview: UIView!
     private var buttons: [[(button: UIButton, type: ButtonType, shape: ButtonShape)]] = []
     private var result = 0.0
     private var operation: Character! = nil
     private var prevCharacter: Character! = nil
     private var lastNum: Double! = nil
     private var separator: Character! = nil
+    private var heightAnchor: NSLayoutDimension! = nil
     
     let numberFormatter: NumberFormatter = {
         let nf = NumberFormatter()
@@ -33,99 +43,10 @@ class ViewController: UIViewController {
         view = UIView()
         view.backgroundColor = UIColor.black
         
-        resultLabel = UILabel()
-        resultLabel.text = "0"
-        resultLabel.textColor = UIColor.white
-        resultLabel.font = UIFont.systemFont(ofSize: 76, weight: .light)
-        resultLabel.textAlignment = .right
-        resultLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(resultLabel)
-        
-        let subview = UIView()
-        view.addSubview(subview)
-    
-        /*
-        var buttonsToAttach = [
-            "0": CalculatorButton(title: "0", color: darkGrey, type: .numeric),
-            "separator": CalculatorButton(title: ",", fontSize: 32, color: darkGrey, type: .separator),
-            "equals": CalculatorButton(title: "\u{0003D}", fontSize: 36, color: customOrange, type: .operation)
-            "1": nil,
-            "2": nil,
-            "3": nil
-        ] */
-    
-        /* Buttons Line 1 */
-        let button0 = initButton(title: "0", fontSize: 32, color: darkGrey, type: ButtonType.numeric, shape: ButtonShape.roundedEdges, line: 1)
-        let buttonSeparator = initButton(title: ",", fontSize: 36, color: darkGrey, type: .separator, shape: .perfectCircle, line: 1)
-        let buttonEquals = initButton(title: "\u{0003D}", fontSize: 36, color: customOrange, type: .operation, shape: .perfectCircle, line: 1)
-        
-        /* Buttons Line 2 */
-        for i in 1...3 {
-            initButton(title: "\(i)", color: darkGrey, type: .numeric, shape: .perfectCircle, line: 2)
-        }
-        initButton(title: "\u{0002B}", fontSize: 36, color: customOrange, type: .operation, shape: .perfectCircle, line: 2)
-        
-        /* Buttons Line 3 */
-        for i in 4...6 {
-            initButton(title: "\(i)", color: darkGrey, type: .numeric, shape: .perfectCircle, line: 3)
-        }
-        initButton(title: "\u{02212}", fontSize: 32, color: customOrange, type: .operation, shape: .perfectCircle, line: 3)
-        
-        /* Buttons Line 4 */
-        for i in 7...9 {
-            initButton(title: "\(i)", color: darkGrey, type: .numeric, shape: .perfectCircle, line: 4)
-        }
-        let buttonMultiply = initButton(title: "\u{000D7}", fontSize: 32, color: customOrange, type: .operation, shape: .perfectCircle, line: 4)
-        
-        /* Buttons Line 5 */
-        let buttonClear = initButton(title: "AC", fontSize: 24, color: lightGrey, type: .clear, shape: .perfectCircle, line: 5)
-        let plusMinusChar = "\u{0207A}\u{02215}\u{0208B}"
-        let buttonPlusMinus = initButton(title: plusMinusChar, fontSize: 28, color: lightGrey, type: .operation, shape: .perfectCircle, line: 5)
-        let buttonPercent = initButton(title: "\u{00025}", fontSize: 24, color: lightGrey, type: .operation, shape: .perfectCircle, line: 5)
-        let buttonDivide = initButton(title: "\u{000F7}", fontSize: 36, color: customOrange, type: .operation, shape: .perfectCircle, line: 5)
-        
-        
-        // Add Constraints
-        subview.translatesAutoresizingMaskIntoConstraints = false
-        subview.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -32).isActive = true
-        subview.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50).isActive = true
-        subview.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        
-        button0.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
-        button0.layer.cornerRadius = 32
-        button0.contentHorizontalAlignment = .left
-        button0.widthAnchor.constraint(equalTo: subview.widthAnchor, multiplier: 0.45).isActive = true
-        
-        buttonSeparator.heightAnchor.constraint(equalTo: buttonSeparator.widthAnchor).isActive = true
-        
-        for (line, buttonsArr) in buttons.enumerated() {
-            
-            let (bottomAnchor, bottomConstant) = line == 0 ?
-                (subview.bottomAnchor, 0) :
-                (buttons[line - 1][0].button.topAnchor, -16)
-            
-            for (col, button) in buttonsArr.enumerated() {
-                let leftAnchor = col == 0 ?
-                    subview.leftAnchor :
-                    buttonsArr[col - 1].button.rightAnchor
-                
-                button.button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: CGFloat(bottomConstant)).isActive = true
-                button.button.leftAnchor.constraint(equalTo: leftAnchor, constant: 16).isActive = true
-                button.button.heightAnchor.constraint(equalTo: buttonSeparator.heightAnchor).isActive = true
-                
-                
-                if button.shape == .perfectCircle {
-                    button.button.widthAnchor.constraint(equalTo: subview.widthAnchor, multiplier: 0.20).isActive = true
-                }
-            }
-        }
-        
-        
-        resultLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -50).isActive = true
-        resultLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16).isActive = true
-        resultLabel.center.x = view.center.x
-        resultLabel.bottomAnchor.constraint(equalTo: buttons.last![0].button.topAnchor, constant: -16).isActive = true
-
+        initSubview()
+        initButtons()
+        addConstraintsToButtons()
+        initResultLabel()
     }
     
     override func viewDidLayoutSubviews() {
@@ -171,13 +92,109 @@ class ViewController: UIViewController {
             button.addTarget(self, action: #selector(separatorButtonClicked(_:)), for: .touchDown)
         }
 
-       // if buttons[line]
         if buttons.count < line {
             buttons.append([])
         }
-        //buttons[line - 1]
         buttons[line - 1].append((button: button, type: type, shape: shape))
         return button
+    }
+    
+    private func initSubview() {
+        subview = UIView()
+        view.addSubview(subview)
+        
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        subview.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -32).isActive = true
+        subview.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50).isActive = true
+        subview.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+    }
+    
+    private func initButtons() {
+        let buttonsToAttach = [
+            [
+                NumericButton(title: "0", color: darkGrey, shape: .roundedEdges),
+                CalculatorButton(title: ",", color: darkGrey, type: .separator),
+                CalculatorButton(title: "=", fontSize: 36, color: customOrange, type: .operation)
+            ],
+            [
+                NumericButton(title: "1", color: darkGrey),
+                NumericButton(title: "2", color: darkGrey),
+                NumericButton(title: "3", color: darkGrey),
+                CalculatorButton(title: "+", fontSize: 36, color: customOrange, type: .operation)
+            ],
+            [
+                NumericButton(title: "4", color: darkGrey),
+                NumericButton(title: "5", color: darkGrey),
+                NumericButton(title: "6", color: darkGrey),
+                CalculatorButton(title: "−", fontSize: 32, color: customOrange, type: .operation)
+            ],
+            [
+                NumericButton(title: "7", color: darkGrey),
+                NumericButton(title: "8", color: darkGrey),
+                NumericButton(title: "9", color: darkGrey),
+                CalculatorButton(title: "×", fontSize: 32, color: customOrange, type: .operation)
+            ],
+            [
+                CalculatorButton(title: "AC", fontSize: 24, color: lightGrey, type: .clear),
+                CalculatorButton(title: "⁺∕₋", fontSize: 28, color: lightGrey, type: .operation),
+                CalculatorButton(title: "%", fontSize: 24, color: lightGrey, type: .operation),
+                CalculatorButton(title: "÷", fontSize: 36, color: customOrange, type: .operation)
+            ]
+        ]
+        
+        for (line, buttonsLine) in buttonsToAttach.enumerated() {
+            for buttonToInit in buttonsLine {
+                let button =  initButton(title: buttonToInit.title, fontSize: buttonToInit.fontSize, color: buttonToInit.color, type: buttonToInit.type, shape: buttonToInit.shape, line: line + 1)
+                
+                if buttonToInit.title == "0" {
+                    button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
+                    button.layer.cornerRadius = 32
+                    button.contentHorizontalAlignment = .left
+                    button.widthAnchor.constraint(equalTo: subview.widthAnchor, multiplier: 0.45).isActive = true
+                } else if buttonToInit.title == "," {
+                    button.heightAnchor.constraint(equalTo: button.widthAnchor).isActive = true
+                    heightAnchor = button.heightAnchor
+                }
+            }
+        }
+    }
+    
+    private func addConstraintsToButtons() {
+        for (line, buttonsArr) in buttons.enumerated() {
+            let (bottomAnchor, bottomConstant) = line == 0 ?
+                (subview.bottomAnchor, 0) :
+                (buttons[line - 1][0].button.topAnchor, -16)
+            
+            for (col, button) in buttonsArr.enumerated() {
+                let leftAnchor = col == 0 ?
+                    subview.leftAnchor :
+                    buttonsArr[col - 1].button.rightAnchor
+                
+                button.button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: CGFloat(bottomConstant)).isActive = true
+                button.button.leftAnchor.constraint(equalTo: leftAnchor, constant: 16).isActive = true
+                button.button.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+                
+                
+                if button.shape == .perfectCircle {
+                    button.button.widthAnchor.constraint(equalTo: subview.widthAnchor, multiplier: 0.20).isActive = true
+                }
+            }
+        }
+    }
+    
+    private func initResultLabel() {
+        resultLabel = UILabel()
+        resultLabel.text = "0"
+        resultLabel.textColor = UIColor.white
+        resultLabel.font = UIFont.systemFont(ofSize: 76, weight: .light)
+        resultLabel.textAlignment = .right
+        resultLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(resultLabel)
+        
+        resultLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -50).isActive = true
+        resultLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16).isActive = true
+        resultLabel.center.x = view.center.x
+        resultLabel.bottomAnchor.constraint(equalTo: buttons.last![0].button.topAnchor, constant: -16).isActive = true
     }
     
     @objc
